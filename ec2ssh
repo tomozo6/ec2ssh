@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Arg Check
+if [ $# = 0 ]; then
+  echo "Usage: ec2ssh [SSHUser]"
+  echo "   or: ec2ssh [SSHUser] [GrepWord]"
+  exit 1
+fi
+
+# Set User
+USER=$1
+
+# Set Region
+export AWS_DEFAULT_REGION=ap-northeast-1
+
+# Set Opption
+OUTPUT="table"
+QUERY="sort_by(Reservations[].Instances[].\
+                {InstanceId:InstanceId,\
+                 Name:Tags[?Key==\`Name\`].Value|[0],\
+                 Ip:PrivateIpAddress}[],&Name)"
+
+# Set Command
+EC2_DESCRIBE=`aws ec2 describe-instances --output "$OUTPUT" --query "$QUERY"`
+
+
+# Main Function
+if [ "$2" = "" ]; then
+
+    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|)" | peco | awk '{print $4}'`
+
+else
+
+    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|$2)" | peco | awk '{print $4}'`
+
+fi
