@@ -15,14 +15,14 @@ export AWS_DEFAULT_REGION=ap-northeast-1
 
 # Set Opption
 OUTPUT="table"
+FILTER="Name=instance-state-name,Values=running"
 QUERY="sort_by(Reservations[].Instances[].\
                 {InstanceId:InstanceId,\
                  Name:Tags[?Key==\`Name\`].Value|[0],\
                  Ip:PrivateIpAddress}[],&Name)"
 
 # Set Command
-EC2_DESCRIBE=`aws ec2 describe-instances --output "$OUTPUT" --query "$QUERY"`
-
+EC2_DESCRIBE=`aws ec2 describe-instances --output "$OUTPUT" --filter "$FILTER" --query "$QUERY"`
 
 # Main Function
 if [ "$2" = "" ]; then
@@ -36,3 +36,4 @@ else
 fi
 
 ssh $USER@$HOST
+
