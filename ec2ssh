@@ -34,3 +34,6 @@ else
     HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|$2)" | peco | awk '{print $4}'`
 
 fi
+
+ssh $USER@$HOST
+
