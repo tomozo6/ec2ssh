@@ -29,6 +29,7 @@ $ sudo yum install python-pip
 $ sudo pip install pip --upgrade
 $ pip install awscli --user
 ```
+awsへアクセスするための認証情報の設定,指定は各自お願いします。
 
 ####  Install peco:
 最新バージョンを確認します。
