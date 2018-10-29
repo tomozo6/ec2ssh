@@ -27,13 +27,15 @@ EC2_DESCRIBE=`aws ec2 describe-instances --output "$OUTPUT" --filter "$FILTER" -
 # Main Function
 if [ "$2" = "" ]; then
 
-    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|)" | peco | awk '{print $4}'`
+    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|)" | peco | awk -F '|' '{print $3}'`
 
 else
 
-    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|$2)" | peco | awk '{print $4}'`
+    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|$2)" | peco | awk -F '|' '{print $3}'`
 
 fi
 
-ssh $USER@$HOST
+# Delete Space
+HOST=`echo $HOST`
 
+ssh "$USER"@"$HOST"
