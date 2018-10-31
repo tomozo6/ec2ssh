@@ -43,7 +43,7 @@ $ wget https://github.com/peco/peco/releases/download/v0.5.3/peco_linux_amd64.ta
 $ tar -C ~/local -zxvf peco_linux_amd64.tar.gz
 
 # Move decompressed peco command binary to /usr/local/bin/
-$ sudo mv ~/local/src/peco_linux_amd64/peco /usr/local/bin/
+$ sudo mv ~/local/peco_linux_amd64/peco /usr/local/bin/
 
 # Check
 $ which peco
