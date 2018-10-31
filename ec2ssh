@@ -31,7 +31,7 @@ if [ "$2" = "" ]; then
 
 else
 
-    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|$2|)" | peco | awk -F '|' '{print $3}'`
+    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|$2)" | peco | awk -F '|' '{print $3}'`
 
 fi
 
