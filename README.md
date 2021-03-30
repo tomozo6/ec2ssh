@@ -1,3 +1,5 @@
+#### Read this in other languages.
+<kbd>[<img title="日本語" alt="日本語" src="https://cdn.staticaly.com/gh/hjnilsson/country-flags/master/svg/jp.svg" width="22">](/README.ja.md)</kbd>
 # Overview
 `ec2ssh` is a tool that can easily ssh login to AWS EC2.
 
