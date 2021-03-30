@@ -1,41 +1,127 @@
 #!/bin/bash
 
-# Arg Check
-if [ $# = 0 ]; then
-  echo "Usage: ec2ssh [SSHUser]"
-  echo "   or: ec2ssh [SSHUser] [GrepWord]"
+# Usageを表示
+function usage() {
+  echo $1
+  cat <<_EOT_
+Usage:
+  `basename $0` [-g grepword] [-s] [-u user] ...
+
+Description:
+  ec2ssh is a tool that can easily ssh login to AWS EC2.
+
+Options:
+  -g specify the word you want to grep.
+  -s use SSM SessionManager. (use the InstanceID instead of IpAddress.)
+  -u specify the user you want to ssh. (default: ec2-user)
+  -h show help.
+
+_EOT_
   exit 1
+}
+
+# オプションフラグ用変数初期化
+function initOptionFlags() {
+  for char in {{a..z},{A..Z}}
+  do
+    eval OPT_FLAG_${char}=0;
+  done
+}
+
+# オプション解析結果を表示
+function printOptions() {
+  echo "### 指定オプション一覧"
+  for char in {{a..z},{A..Z}}
+  do
+    opt=$(eval echo \${OPT_FLAG_${char}:-""})
+    optarg=$(eval echo \${OPT_VALUE_${char}:-""})
+    if [[ $opt = 1 ]];then
+      echo "opt=-${char} ${optarg:+optarg=${optarg}}"
+    fi
+  done
+  echo
+}
+
+# オプションフラグ用変数初期化(OPT_FLAG_[a-zA-Z])
+initOptionFlags
+
+# getoptsでの引数判定
+while getopts "g:su:h" OPT
+do
+  case $OPT in
+    h) usage  "Help"; continue;;
+    :) usage  "[ERROR] Option argument is undefined."; continue;;
+    \?) usage "[ERROR] Undefined options."; continue;;
+  esac
+  # オプション解析
+  eval OPT_FLAG_${OPT}=1;eval OPT_VALUE_${OPT}=${OPTARG:-""}
+done
+
+# getopts分の引数値移動
+shift $(($OPTIND - 1))
+
+# オプション表示
+#printOptions
+
+# 引数の数を確認
+#echo "### 引数一覧"
+for argv in $@
+do
+  echo ${argv}
+done
+echo
+
+# -----------------------------------------------------------------------------
+# Flagや引数のコントロール
+# -----------------------------------------------------------------------------
+# 初期値設定
+user='ec2-user'
+grepword='^'
+awk_column=3
+# 2: InstanceId
+# 3: Ip
+
+#echo "### Main処理"
+# オプションsが指定されている場合
+if [[ $OPT_FLAG_s = 1 ]];then
+  # echo "オプションsが指定されました。"
+  awk_column=2
+fi
+# オプションuが指定されている場合
+if [[ $OPT_FLAG_u = 1 ]];then
+  # echo "オプションuに${OPT_VALUE_u}が指定されました。"
+  user=${OPT_VALUE_u}
+fi
+# オプションgが指定されている場合
+if [[ $OPT_FLAG_g = 1 ]];then
+  # echo "オプションgに${OPT_VALUE_g}が指定されました。"
+  grepword=${OPT_VALUE_g}
 fi
 
-# Set User
-USER=$1
-
-# Set Region
-export AWS_DEFAULT_REGION=ap-northeast-1
-
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
 # Set Opption
-OUTPUT="table"
-FILTER="Name=instance-state-name,Values=running"
-QUERY="sort_by(Reservations[].Instances[].\
-                {InstanceId:InstanceId,\
-                 Name:Tags[?Key==\`Name\`].Value|[0],\
-                 Ip:PrivateIpAddress}[],&Name)"
+output='table'
+filter="Name=instance-state-name,Values=running"
+query="sort_by( \
+  Reservations[].Instances[].{ \
+    InstanceId:InstanceId,\
+    Name:Tags[?Key==\`Name\`].Value|[0],\
+    Ip:PrivateIpAddress \
+  }[],&Name)"
 
-# Set Command
-EC2_DESCRIBE=`aws ec2 describe-instances --output "$OUTPUT" --filter "$FILTER" --query "$QUERY"`
+# EC2 Describe実行
+EC2_DESCRIBE=$(aws ec2 describe-instances --output "${output}" --filter "${filter}" --query "${query}")
 
-# Main Function
-if [ "$2" = "" ]; then
+# 接続先ホストを選択させる
+host=$(echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|${grepword})" | peco | awk -F '|' "{print \$${awk_column}}" | sed 's/^ *//'| sed 's/ *$//')
 
-    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|)" | peco | awk -F '|' '{print $3}'`
-
-else
-
-    HOST=`echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|$2)" | peco | awk -F '|' '{print $3}'`
-
+#ホスト名が空だったら終了
+if [ -z "${host}" ]; then
+  exit
 fi
 
-# Delete Space
-HOST=`echo $HOST`
-
-ssh "$USER"@"$HOST"
+# SSH接続
+echo "exec: ssh ${user}@${host}"
+ssh ${user}@${host}

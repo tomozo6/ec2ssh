@@ -1,63 +1,32 @@
-# ec2ssh
+# Overview
+ec2ssh is a tool that can easily ssh login to AWS EC2.
 
-## ec2sshとは
-踏み台サーバ(bastion)から、簡単に各EC2サーバーへログインするためのツールです。
-
-## 前提条件
-以下が使用できる必要があります。
-OSは、AmazonLinux2,CentOS7で動作確認済みです。
-
+# Install
+## Homebrew (macOS and Linux)
+```
+$ brew install tomozo6/tap/ec2ssh
+```
+# Requirement
 - awscli
 - peco
-- bash
 
-## 使い方
+# Usage
 ```
-Usage: ec2ssh [SSHUser]
-   or: ec2ssh [SSHUser] [GrepWord]
-```
-※そのうちDEMO動画を載せます。
+Usage:
+  ec2ssh [-g grepword] [-s] [-u user] ...
 
-## Install
-念のため`awscli`と`peco`についてもインストール手順を記載します。
-AmazonLinux2であれば、`awscli`はデフォルトでインストールされていると思います。
+Description:
+  ec2ssh is a tool that can easily ssh login to AWS EC2.
 
-#### Install awscli:
-```bash
-$ sudo yum install epel-release
-$ sudo yum install python-pip
-$ sudo pip install pip --upgrade
-$ pip install awscli --user
-```
-awsへアクセスするための認証情報の設定,指定は各自お願いします。
-
-####  Install peco:
-最新バージョンを確認します。
-https://github.com/peco/peco/releases
--> v0.5.3(as of October 26, 2018)
-```bash
-$ cd ~/
-$ mkdir -p local/src
-$ cd local/src
-$ wget https://github.com/peco/peco/releases/download/v0.5.3/peco_linux_amd64.tar.gz
-$ tar -C ~/local -zxvf peco_linux_amd64.tar.gz
-
-# Move decompressed peco command binary to /usr/local/bin/
-$ sudo mv ~/local/peco_linux_amd64/peco /usr/local/bin/
-
-# Check
-$ which peco
+Options:
+  -g specify the word you want to grep.
+  -s use SSM SessionManager. (use the InstanceID instead of IpAddress.)
+  -u specify the user you want to ssh. (default: ec2-user)
+  -h show help.
 ```
 
-### Install ec2ssh
-```bash
-$ cd ~/
-$ mkdir -p local/src
-$ cd local/src
-$ wget https://raw.githubusercontent.com/tosasaki/ec2ssh/master/ec2ssh
-# Move ec2ssh command binary to /usr/local/bin/
-$ sudo mv ~/local/src/ec2ssh /usr/local/bin/
+# Licence
+MIT
 
-# Check
-$ which ec2ssh
-```
+# Author
+tomozo6
