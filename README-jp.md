@@ -1,11 +1,9 @@
 # 概要
-`ec2ssh` は、AWS EC2へのSSHログインを簡単にするためのツールです。
+`ec2ssh` はAWS EC2へのSSHログインを簡単にするためのツールです。
 
-# 詳細
-最終的に以下のようなsshコマンドを生成して実行しているだけです。
+最終的に、以下のようなsshコマンドを生成して実行しているだけのラッパーツールです。
 
 `ssh ${user}@${LocalIpAddress}` or `ssh ${user}@${InstanceID}`
-
 
 # インストール方法
 ## Homebrew (macOS and Linux)
@@ -32,7 +30,7 @@ apt install peco
 [peco Installation](https://github.com/peco/peco#installation)
 
 ## Session Manager plugin
-Session Manager を使用する場合は必要です。
+Session Manager を使用する場合は必要になります。
 
 また Session Manager を通してSSH接続をする場合は、バージョン `1.1.23.0` 以上の Session Managerプラグインが必要です。
 
@@ -65,7 +63,9 @@ Session Manager を使用する場合は必要です。
 
 
 ## Session Managerを通してSSH接続をする
-自分のPCのSSH設定ファイルに以下を追記します。
+`ec2ssh`にオプション`-s`を付与すると、EC2のインスタンスIDをSSH接続先のホスト名とするため、Session Managerでの接続が可能になります。
+
+また自分のPCのSSH設定ファイルに以下を追記する必要があります。
 
 (SSH設定ファイルは通常`~/.ssh/config`にあります。)
 ```bash
