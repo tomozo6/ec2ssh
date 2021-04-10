@@ -1,11 +1,12 @@
 #!/bin/bash
+AWS_PAGER=""
 
 # Usageを表示
 function usage() {
   echo $1
   cat <<_EOT_
 Usage:
-  `basename $0` [-g grepword] [-s] [-u user] ...
+  $(basename $0) [-g grepword] [-s] [-m] [-u user] ...
 
 Description:
   ec2ssh is a tool that can easily ssh login to AWS EC2.
@@ -13,6 +14,7 @@ Description:
 Options:
   -g specify the word you want to grep.
   -s use SSM SessionManager. (use the InstanceID instead of IpAddress.)
+  -m access managed instances other than AWS. (Hybrid environment)
   -u specify the user you want to ssh. (default: ec2-user)
   -h show help.
 
@@ -22,20 +24,18 @@ _EOT_
 
 # オプションフラグ用変数初期化
 function initOptionFlags() {
-  for char in {{a..z},{A..Z}}
-  do
-    eval OPT_FLAG_${char}=0;
+  for char in {{a..z},{A..Z}}; do
+    eval OPT_FLAG_${char}=0
   done
 }
 
 # オプション解析結果を表示
 function printOptions() {
   echo "### 指定オプション一覧"
-  for char in {{a..z},{A..Z}}
-  do
+  for char in {{a..z},{A..Z}}; do
     opt=$(eval echo \${OPT_FLAG_${char}:-""})
     optarg=$(eval echo \${OPT_VALUE_${char}:-""})
-    if [[ $opt = 1 ]];then
+    if [[ $opt = 1 ]]; then
       echo "opt=-${char} ${optarg:+optarg=${optarg}}"
     fi
   done
@@ -46,15 +46,24 @@ function printOptions() {
 initOptionFlags
 
 # getoptsでの引数判定
-while getopts "g:su:h" OPT
-do
+while getopts "g:smu:h" OPT; do
   case $OPT in
-    h) usage  "Help"; continue;;
-    :) usage  "[ERROR] Option argument is undefined."; continue;;
-    \?) usage "[ERROR] Undefined options."; continue;;
+  h)
+    usage "Help"
+    continue
+    ;;
+  :)
+    usage "[ERROR] Option argument is undefined."
+    continue
+    ;;
+  \?)
+    usage "[ERROR] Undefined options."
+    continue
+    ;;
   esac
   # オプション解析
-  eval OPT_FLAG_${OPT}=1;eval OPT_VALUE_${OPT}=${OPTARG:-""}
+  eval OPT_FLAG_${OPT}=1
+  eval OPT_VALUE_${OPT}=${OPTARG:-""}
 done
 
 # getopts分の引数値移動
@@ -65,8 +74,7 @@ shift $(($OPTIND - 1))
 
 # 引数の数を確認
 #echo "### 引数一覧"
-for argv in $@
-do
+for argv in $@; do
   echo ${argv}
 done
 echo
@@ -77,23 +85,29 @@ echo
 # 初期値設定
 user='ec2-user'
 grepword='^'
+mi_mode_enabled=false
 awk_column=3
 # 2: InstanceId
 # 3: Ip
 
 #echo "### Main処理"
 # オプションsが指定されている場合
-if [[ $OPT_FLAG_s = 1 ]];then
+if [[ $OPT_FLAG_s = 1 ]]; then
   # echo "オプションsが指定されました。"
   awk_column=2
 fi
+# オプションmが指定されている場合
+if [[ $OPT_FLAG_m = 1 ]]; then
+  # echo "オプションmが指定されました。"
+  mi_mode_enabled=true
+fi
 # オプションuが指定されている場合
-if [[ $OPT_FLAG_u = 1 ]];then
+if [[ $OPT_FLAG_u = 1 ]]; then
   # echo "オプションuに${OPT_VALUE_u}が指定されました。"
   user=${OPT_VALUE_u}
 fi
 # オプションgが指定されている場合
-if [[ $OPT_FLAG_g = 1 ]];then
+if [[ $OPT_FLAG_g = 1 ]]; then
   # echo "オプションgに${OPT_VALUE_g}が指定されました。"
   grepword=${OPT_VALUE_g}
 fi
@@ -101,21 +115,36 @@ fi
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
-# Set Opption
-output='table'
-filter="Name=instance-state-name,Values=running"
-query="sort_by( \
+if ${mi_mode_enabled}; then
+  # Management Instance Mode
+
+  filters='Key=ResourceType,Values=ManagedInstance'
+  query="InstanceInformationList[].{ \
+    InstanceId:InstanceId, \
+    Name:Name Ip:IPAddress, \
+    Status:PingStatus \
+  }"
+
+  # SSM Describe実行
+  host=$(aws ssm describe-instance-information --output table --query "${query}" | peco | awk -F '|' '{print $2}' | sed 's/^ *//' | sed 's/ *$//')
+
+else
+  # EC2 Mode
+  filter="Name=instance-state-name,Values=running"
+  query="sort_by( \
   Reservations[].Instances[].{ \
     InstanceId:InstanceId,\
     Name:Tags[?Key==\`Name\`].Value|[0],\
     Ip:PrivateIpAddress \
   }[],&Name)"
 
-# EC2 Describe実行
-EC2_DESCRIBE=$(aws ec2 describe-instances --output "${output}" --filter "${filter}" --query "${query}")
+  # EC2 Describe実行
+  EC2_DESCRIBE=$(aws ec2 describe-instances --output table --filter "${filter}" --query "${query}")
 
-# 接続先ホストを選択させる
-host=$(echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|${grepword})" | peco | awk -F '|' "{print \$${awk_column}}" | sed 's/^ *//'| sed 's/ *$//')
+  # 接続先ホストを選択させる
+  host=$(echo "${EC2_DESCRIBE}" | grep -Ei "(Instance|\-{2}|${grepword})" | peco | awk -F '|' "{print \$${awk_column}}" | sed 's/^ *//' | sed 's/ *$//')
+
+fi
 
 #ホスト名が空だったら終了
 if [ -z "${host}" ]; then

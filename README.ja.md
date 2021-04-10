@@ -1,35 +1,47 @@
-# 概要
+# ec2ssh
+
 `ec2ssh` はAWS EC2へのSSHログインを簡単にするためのツールです。
 
 最終的に、以下のようなsshコマンドを生成して実行しているだけのラッパーツールです。
 
 `ssh ${user}@${LocalIpAddress}` or `ssh ${user}@${InstanceID}`
 
-# インストール方法
-## Homebrew (macOS and Linux)
+## インストール方法
+
+### Homebrew (macOS and Linux)
+
 ```bash
-$ brew install tomozo6/tap/ec2ssh
+brew install tomozo6/tap/ec2ssh
 ```
-# 前提条件
-## awsci
+
+## 前提条件
+
+### awsci
+
 インストール方法は以下のURLを参考にしてください。
 
 [Installing, updating, and uninstalling the AWS CLI](https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/cli-chap-install.html)
 
-## peco
-### macOS (Homebrew)
+### peco
+
+#### macOS (Homebrew)
+
 ```bash
 brew install peco
 ```
-### Debian and Ubuntu based distributions (APT)
+
+#### Debian and Ubuntu based distributions (APT)
+
 ```bash
 apt install peco
 ```
+
 `peco`の詳細は以下のURLを参考にしてください。
 
 [peco Installation](https://github.com/peco/peco#installation)
 
-## Session Manager plugin
+### Session Manager plugin
+
 Session Manager を使用する場合は必要になります。
 
 また Session Manager を通してSSH接続をする場合は、バージョン `1.1.23.0` 以上の Session Managerプラグインが必要です。
@@ -40,9 +52,9 @@ Session Manager を使用する場合は必要になります。
 
 [(オプション) AWS CLI 用の Session Manager plugin をインストールする](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 
+## 使い方
 
-# 使い方
-```
+```bash
 使い方:
   ec2ssh [-g grepword] [-s] [-u user] ...
 
@@ -53,26 +65,31 @@ Session Manager を使用する場合は必要になります。
   -g Grepしたいワードを指定してください。
   -s SSMセッションマネージャーを使用してログインしたい場合に指定してください。
      (IPアドレスではなくインスタンスIDでSSHしようと試みます)
+  -m AWS環境外のマネージドインスタンスに接続した時に指定します。
   -u ログインしたいSSHユーザーを指定します. (default: ec2-user)
   -h ヘルプを表示します。
 ```
-## 通常のSSH接続をする
+
+### 通常のSSH接続をする
+
 `ec2ssh`はEC2のローカルIPアドレスをSSH接続先のホスト名とするため、踏み台サーバーでの使用を想定しています。
 
 自分のPCから、踏み台サーバーを経由して多段SSHをするには、自分のPCのSSH設定ファイルをカスタマイズする必要があります。(ここでは説明しません)
 
+### Session Managerを通してSSH接続をする
 
-## Session Managerを通してSSH接続をする
 `ec2ssh`にオプション`-s`を付与すると、EC2のインスタンスIDをSSH接続先のホスト名とするため、Session Managerでの接続が可能になります。
 
 また自分のPCのSSH設定ファイルに以下を追記する必要があります。
 
 (SSH設定ファイルは通常`~/.ssh/config`にあります。)
+
 ```bash
 # SSH over Session Manager
 host i-* mi-*
     ProxyCommand sh -c "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
 ```
+
 詳細は以下のURLの
 
 「Session Managerを通して SSH 接続を有効にする」の 「2. SSH を使用してマネージドインスタンスに接続するローカルマシンで、次の手順を実行します。」
@@ -80,8 +97,17 @@ host i-* mi-*
 
 [ステップ 8: (オプション) Session Manager を通して SSH 接続を有効にする](https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/session-manager-getting-started-enable-ssh-connections.html)
 
-# ライセンス
+#### AWS環境外のマネージドインスタンスに接続する
+
+`ec2ssh`にオプション`-m`を付与すると、ハイブリッドアクティベーションにより追加したマネージドインスタンスにアクセス可能です。
+具体的には`ssm describe-instance-information`コマンドを使用してインスタンス情報を取得します。
+
+オプション`-m`を付与した場合、セッションマネージャーを通した接続が必須になるため、オプション`-s`の有無に関わらず、EC2のインスタンスIDをSSH接続先のホスト名とします。
+
+## ライセンス
+
 MIT
 
-# 著者
+## 著者
+
 tomozo6
