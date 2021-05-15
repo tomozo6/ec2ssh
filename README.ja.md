@@ -2,9 +2,13 @@
 
 `ec2ssh` はAWS EC2へのSSHログインを簡単にするためのツールです。
 
-最終的に、以下のようなsshコマンドを生成して実行しているだけのラッパーツールです。
+最終的に、以下のようなsshコマンドを生成して実行しているだけのSSHラッパーツールです。
 
 `ssh ${user}@${LocalIpAddress}` or `ssh ${user}@${InstanceID}`
+
+そのためSSH設定ファイルも適用されます。
+
+(SSH設定ファイルは通常`~/.ssh/config`にあります。)
 
 ## インストール方法
 
@@ -18,33 +22,16 @@ brew install tomozo6/tap/ec2ssh
 
 ### awsci
 
+Session Manager を通してSSH接続をする場合は必要です。
+
 インストール方法は以下のURLを参考にしてください。
 
 [Installing, updating, and uninstalling the AWS CLI](https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/cli-chap-install.html)
 
-### peco
-
-#### macOS (Homebrew)
-
-```bash
-brew install peco
-```
-
-#### Debian and Ubuntu based distributions (APT)
-
-```bash
-apt install peco
-```
-
-`peco`の詳細は以下のURLを参考にしてください。
-
-[peco Installation](https://github.com/peco/peco#installation)
-
 ### Session Manager plugin
 
-Session Manager を使用する場合は必要になります。
-
-また Session Manager を通してSSH接続をする場合は、バージョン `1.1.23.0` 以上の Session Managerプラグインが必要です。
+Session Manager を通してSSH接続をする場合は必要です。
+バージョン `1.1.23.0` 以上の Session Managerプラグインが必要です。
 
 古いプラグインがインストールされいたり、そもそもプラグインがインストールされていない場合は、最新版をインストールして下さい。
 
@@ -55,30 +42,40 @@ Session Manager を使用する場合は必要になります。
 ## 使い方
 
 ```bash
-使い方:
-  ec2ssh [-g grepword] [-s] [-u user] ...
+ec2ssh is a tool that can easily ssh login to AWS EC2.
 
-説明:
-  ec2ssh is a tool that can easily ssh login to AWS EC2.
+Usage:
+  ec2ssh [flags]
 
-オプション:
-  -g Grepしたいワードを指定してください。
-  -s SSMセッションマネージャーを使用してログインしたい場合に指定してください。
-     (IPアドレスではなくインスタンスIDでSSHしようと試みます)
-  -m AWS環境外のマネージドインスタンスに接続した時に指定します。
-  -u ログインしたいSSHユーザーを指定します. (default: ec2-user)
-  -h ヘルプを表示します。
+Flags:
+      --config string     config file (default is $HOME/.ec2ssh.yaml)
+  -h, --help              help for ec2ssh
+  -s, --session-manager   use SSM SessionManager. (use the InstanceID instead of IpAddress.)
+  -u, --ssh-user string   ssh user
+  -v, --version           version for ec2ssh
 ```
 
 ### 通常のSSH接続をする
 
+[実行例]
+
+```bash
+ec2ssh
+```
+
 `ec2ssh`はEC2のローカルIPアドレスをSSH接続先のホスト名とするため、踏み台サーバーでの使用を想定しています。
 
-自分のPCから、踏み台サーバーを経由して多段SSHをするには、自分のPCのSSH設定ファイルをカスタマイズする必要があります。(ここでは説明しません)
+自分のPCから踏み台サーバーを経由して多段SSHをするには、自分のPCのSSH設定ファイルをカスタマイズする必要があります。(ここでは説明しません)
 
 ### Session Managerを通してSSH接続をする
 
-`ec2ssh`にオプション`-s`を付与すると、EC2のインスタンスIDをSSH接続先のホスト名とするため、Session Managerでの接続が可能になります。
+[実行例]
+
+```bash
+ec2ssh -s
+```
+
+`ec2ssh`にオプション`-s`を付与すると、EC2のインスタンスIDをSSH接続先のホスト名とするためSession Managerでの接続が可能になります。
 
 また自分のPCのSSH設定ファイルに以下を追記する必要があります。
 
@@ -97,12 +94,18 @@ host i-* mi-*
 
 [ステップ 8: (オプション) Session Manager を通して SSH 接続を有効にする](https://docs.aws.amazon.com/ja_jp/systems-manager/latest/userguide/session-manager-getting-started-enable-ssh-connections.html)
 
-#### AWS環境外のマネージドインスタンスに接続する
+### ec2ssh設定ファイルを使用する
 
-`ec2ssh`にオプション`-m`を付与すると、ハイブリッドアクティベーションにより追加したマネージドインスタンスにアクセス可能です。
-具体的には`ssm describe-instance-information`コマンドを使用してインスタンス情報を取得します。
+ec2sshは、オプションを設定ファイルに記載することが可能です。デフォルトでは`~/.ec2ssh.yaml`を設定ファイルとして自動で読み込みます。
+オプション `--config`を使用して、任意の設定ファイルを読み込みことも可能です。
 
-オプション`-m`を付与した場合、セッションマネージャーを通した接続が必須になるため、オプション`-s`の有無に関わらず、EC2のインスタンスIDをSSH接続先のホスト名とします。
+[設定ファイルの例]
+
+```yaml
+session-manager: true
+user: tomozo6
+```
+
 
 ## ライセンス
 
