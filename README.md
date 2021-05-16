@@ -111,7 +111,7 @@ You can also use the option `--config` to load any configuration file.
 
 ```yaml
 session-manager: true
-user: tomozo6
+ssh-user: tomozo6
 ```
 
 ## Licence

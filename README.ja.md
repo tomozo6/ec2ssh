@@ -110,7 +110,7 @@ ec2sshは、オプションを設定ファイルに記載することが可能�
 
 ```yaml
 session-manager: true
-user: tomozo6
+ssh-user: tomozo6
 ```
 
 ## ライセンス
