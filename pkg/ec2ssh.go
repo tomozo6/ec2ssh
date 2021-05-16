@@ -134,7 +134,21 @@ func (d *App) Ssh() {
 
 	// 実行処理、Prompt同様、特定の操作でエラーが返ってくるので、同様のエラー処理が必要になります。
 	// 戻り値は、第1は選択したデータのindex、第2は選択した行の文字列が返ってきます。
+
+    // Ctrl + c もしくは Ctrl + dの場合はエラーが返ってくるので、型チェックして真の場合は終了
+    // それ以外のエラーは出力してから異常終了
 	i, _, err := prompt.Run()
+
+	if err == promptui.ErrEOF {
+		fmt.Println("Exit ec2ssh, because ctrl+D has been entered.")
+		os.Exit(0)
+	}
+
+	if err == promptui.ErrInterrupt {
+		fmt.Println("Exit ec2ssh, because ctrl+C has been entered.")
+		os.Exit(-1)
+	}
+
 	if err != nil {
 		fmt.Println(err)
 	}
