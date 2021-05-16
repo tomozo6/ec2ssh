@@ -12,10 +12,19 @@
 
 ## インストール方法
 
-### Homebrew (macOS and Linux)
+### MacOS
 
 ```bash
 brew install tomozo6/tap/ec2ssh
+```
+
+### Linux
+
+```bash
+wget https://github.com/tomozo6/ec2ssh/releases/download/v0.0.3/ec2ssh_Linux_x86_64.tar.gz
+tar zxvf ec2ssh_Linux_x86_64.tar.gz
+chmod +x ./ec2ssh
+sudo mv ./ec2ssh /usr/local/bin/ec2ssh
 ```
 
 ## 前提条件
