@@ -27,7 +27,6 @@ archives:
       format: zip
 release:
   prerelease: auto
-brew:
 brews:
   -
     name: ec2ssh
