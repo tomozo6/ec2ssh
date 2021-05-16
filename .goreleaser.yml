@@ -27,16 +27,19 @@ archives:
       format: zip
 release:
   prerelease: auto
-brew:
-  github:
-    owner: tomozo6
-    name: homebrew-tap
-  commit_author:
-    name: goreleaserbot
-    email: goreleaser@carlosbecker.com
-  description: "ec2ssh is a tool that can easily ssh login to AWS EC2."
-  homepage: "https://github.com/tomozo6/ec2ssh"
-  install: |
-    bin.install "ec2ssh"
-  test: |
-    system "#{bin}/ec2ssh -h"
+brews:
+  - name: ec2ssh
+    tap:
+      owner: tomozo6
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@carlosbecker.com
+    description: "ec2ssh is a tool that can easily ssh login to AWS EC2."
+    license: "MIT"
+    homepage: "https://github.com/tomozo6/ec2ssh"
+    install: |
+      bin.install "ec2ssh"
+    test: |
+      system "#{bin}/ec2ssh -h"
