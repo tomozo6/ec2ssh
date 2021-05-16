@@ -106,16 +106,15 @@ func (d *App) Ssh() {
 	}
 
 	templates := &promptui.SelectTemplates{
-		Label: "{{ . }}?",
-		// Active:   "\U0001F336 {{ .Name | cyan }} ({{ .InstanceId | red }})",
-		Active:   fmt.Sprintf("\U0001F449 {{ .Name | cyan }} ({{ .%s | red }})", t),
-		Inactive: fmt.Sprintf("{{ .Name | cyan }} ({{ .%s | red }})", t),
-		Selected: "\U0001F449 {{ .Name | green | cyan }}",
+		Label:    `{{ " ? " | green | bold }}{{ . | yellow | bold }}`,
+		Active:   fmt.Sprintf(`{{ ">" | blue | bold }} {{ .Name | cyan | bold }} ({{ .%s | red | bold }})`, t),
+		Inactive: fmt.Sprintf(`  {{ .Name }} ({{ .%s }})`, t),
+		Selected: `{{ ">" | blue| bold }} {{ .Name | cyan | bold }}`,
 		Details: `
-	--------- Instance ----------
-	{{ "Name:" | faint }}   {{ .Name }}
-	{{ "InstanceId:" | faint }}  {{ .InstanceId }}
-	{{ "Ip:" | faint }}    {{ .Ip }}`,
+{{ "--------- Instance ----------" | faint }}
+{{ "Name:" | faint }}       {{ .Name | faint }}
+{{ "InstanceId:" | faint }} {{ .InstanceId | faint }}
+{{ "Ip:" | faint }}         {{ .Ip | faint }}`,
 	}
 
 	searcher := func(input string, index int) bool {
@@ -126,7 +125,7 @@ func (d *App) Ssh() {
 	}
 
 	prompt := promptui.Select{
-		Label:     "Which instance",
+		Label:     "Choose Instance:",
 		Items:     e,
 		Templates: templates,
 		Size:      15,
