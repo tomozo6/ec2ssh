@@ -79,8 +79,6 @@ ec2ssh -s
 
 また自分のPCのSSH設定ファイルに以下を追記する必要があります。
 
-(SSH設定ファイルは通常`~/.ssh/config`にあります。)
-
 ```bash
 # SSH over Session Manager
 host i-* mi-*
@@ -105,7 +103,6 @@ ec2sshは、オプションを設定ファイルに記載することが可能�
 session-manager: true
 user: tomozo6
 ```
-
 
 ## ライセンス
 
