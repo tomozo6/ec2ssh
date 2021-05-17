@@ -14,6 +14,9 @@ Therefore, the SSH configuration file is also applied.
 
 (The SSH config file is usually located in `~/.ssh/config`.)
 
+- Only EC2 in Runnning state and SSM instance in Online state are displayed as options.
+
+
 ## Install
 
 ### MacOS
@@ -62,6 +65,7 @@ Usage:
 
 Flags:
       --config string     config file (default is $HOME/.ec2ssh.yaml)
+  -g, --grep string       grep word for InstanceName
   -h, --help              help for ec2ssh
   -s, --session-manager   use SSM SessionManager. (use the InstanceID instead of IpAddress.)
   -u, --ssh-user string   ssh user
@@ -112,6 +116,7 @@ You can also use the option `--config` to load any configuration file.
 ```yaml
 session-manager: true
 ssh-user: tomozo6
+grep: prod
 ```
 
 ## Licence
