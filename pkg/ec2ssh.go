@@ -17,6 +17,7 @@ import (
 
 type App struct {
 	user         string
+	grepword     string
 	ssmEnabled   bool
 	cfg          aws.Config
 	SSMInstances []instanceInfo
@@ -38,6 +39,7 @@ func NewApp() (*App, error) {
 	d := &App{
 		cfg:        cfg,
 		user:       viper.GetString("ssh-user"),
+		grepword:   viper.GetString("grep"),
 		ssmEnabled: viper.GetBool("session-manager"),
 	}
 	return d, nil
@@ -63,7 +65,10 @@ func (d *App) GetSSMinstancesInfo() error {
 				e.Name = *v.Name
 				e.InstanceId = *v.InstanceId
 				e.Ip = *v.IPAddress
-				d.SSMInstances = append(d.SSMInstances, e)
+
+				if strings.Contains(e.Name, d.grepword) {
+					d.SSMInstances = append(d.SSMInstances, e)
+				}
 			}
 		}
 	}
@@ -94,7 +99,10 @@ func (d *App) GetEC2instancesInfo() error {
 						e.Name = *t.Value
 					}
 				}
-				d.EC2Instances = append(d.EC2Instances, e)
+
+				if strings.Contains(e.Name, d.grepword) {
+					d.EC2Instances = append(d.EC2Instances, e)
+				}
 			}
 		}
 	}
