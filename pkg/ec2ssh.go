@@ -55,12 +55,16 @@ func (d *App) GetSSMinstancesInfo() error {
 	}
 
 	for _, v := range result.InstanceInformationList {
+		// 名前が空じゃないインスタンスだけ処理する(空なインスタンスはEC2)
 		if v.Name != nil {
-			var e instanceInfo
-			e.Name = *v.Name
-			e.InstanceId = *v.InstanceId
-			e.Ip = *v.IPAddress
-			d.SSMInstances = append(d.SSMInstances, e)
+			// Online状態のインスタンスのみ処理する
+			if v.PingStatus == "Online" {
+				var e instanceInfo
+				e.Name = *v.Name
+				e.InstanceId = *v.InstanceId
+				e.Ip = *v.IPAddress
+				d.SSMInstances = append(d.SSMInstances, e)
+			}
 		}
 	}
 	return nil
@@ -79,16 +83,19 @@ func (d *App) GetEC2instancesInfo() error {
 
 	for _, r := range result.Reservations {
 		for _, i := range r.Instances {
-			var e instanceInfo
-			e.InstanceId = *i.InstanceId
-			e.Ip = *i.PrivateIpAddress
+			// Running状態のEC2のみ処理する
+			if i.State.Code == 16 {
+				var e instanceInfo
+				e.InstanceId = *i.InstanceId
+				e.Ip = *i.PrivateIpAddress
 
-			for _, t := range i.Tags {
-				if *t.Key == "Name" {
-					e.Name = *t.Value
+				for _, t := range i.Tags {
+					if *t.Key == "Name" {
+						e.Name = *t.Value
+					}
 				}
+				d.EC2Instances = append(d.EC2Instances, e)
 			}
-			d.EC2Instances = append(d.EC2Instances, e)
 		}
 	}
 	return nil
@@ -135,8 +142,8 @@ func (d *App) Ssh() {
 	// 実行処理、Prompt同様、特定の操作でエラーが返ってくるので、同様のエラー処理が必要になります。
 	// 戻り値は、第1は選択したデータのindex、第2は選択した行の文字列が返ってきます。
 
-    // Ctrl + c もしくは Ctrl + dの場合はエラーが返ってくるので、型チェックして真の場合は終了
-    // それ以外のエラーは出力してから異常終了
+	// Ctrl + c もしくは Ctrl + dの場合はエラーが返ってくるので、型チェックして真の場合は終了
+	// それ以外のエラーは出力してから異常終了
 	i, _, err := prompt.Run()
 
 	if err == promptui.ErrEOF {

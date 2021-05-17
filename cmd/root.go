@@ -25,9 +25,7 @@ var rootCmd = &cobra.Command{
 		app, _ := pkg.NewApp()
 		app.GetSSMinstancesInfo()
 		app.GetEC2instancesInfo()
-
-		 app.Ssh()
-
+		app.Ssh()
 	},
 }
 
@@ -43,7 +41,6 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.ec2ssh.yaml)")
 
 	// Cobra also supports local flags, which will only run
