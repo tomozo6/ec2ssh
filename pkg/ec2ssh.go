@@ -142,7 +142,7 @@ func (d *App) Ssh() {
 
 	searcher := func(input string, index int) bool {
 		v := e[index]
-		name := strings.Replace(strings.ToLower(v.Name), " ", "", -1)
+		name := strings.Replace(strings.ToLower(v.Name + v.InstanceId), " ", "", -1)
 		input = strings.Replace(strings.ToLower(input), " ", "", -1)
 		return strings.Contains(name, input)
 	}
