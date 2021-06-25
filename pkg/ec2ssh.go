@@ -66,9 +66,13 @@ func (d *App) GetSSMinstancesInfo() error {
 				e.InstanceId = *v.InstanceId
 				e.Ip = *v.IPAddress
 
+				// インスタンス名かインスタンスIDにgrepwordが含まれていたらappend
 				if strings.Contains(e.Name, d.grepword) {
 					d.SSMInstances = append(d.SSMInstances, e)
+				} else if strings.Contains(e.InstanceId, d.grepword) {
+					d.SSMInstances = append(d.SSMInstances, e)
 				}
+
 			}
 		}
 	}
@@ -94,13 +98,17 @@ func (d *App) GetEC2instancesInfo() error {
 				e.InstanceId = *i.InstanceId
 				e.Ip = *i.PrivateIpAddress
 
+				// インスタンス名をネームタグから取得する
 				for _, t := range i.Tags {
 					if *t.Key == "Name" {
 						e.Name = *t.Value
 					}
 				}
 
+				// インスタンス名かインスタンスIDにgrepwordが含まれていたらappend
 				if strings.Contains(e.Name, d.grepword) {
+					d.EC2Instances = append(d.EC2Instances, e)
+				} else if strings.Contains(e.InstanceId, d.grepword) {
 					d.EC2Instances = append(d.EC2Instances, e)
 				}
 			}

@@ -60,7 +60,7 @@ Usage:
 
 Flags:
       --config string     config file (default is $HOME/.ec2ssh.yaml)
-  -g, --grep string       grep word for InstanceName
+  -g, --grep string       grep word for InstanceName or InstanceID
   -h, --help              help for ec2ssh
   -s, --session-manager   use SSM SessionManager. (use the InstanceID instead of IpAddress.)
   -u, --ssh-user string   ssh user

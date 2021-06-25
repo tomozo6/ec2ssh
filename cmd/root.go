@@ -48,7 +48,7 @@ func init() {
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().BoolP("session-manager", "s", false, "use SSM SessionManager. (use the InstanceID instead of IpAddress.)")
 	rootCmd.Flags().StringP("ssh-user", "u", "", "ssh user")
-	rootCmd.Flags().StringP("grep", "g", "", "grep word for InstanceName")
+	rootCmd.Flags().StringP("grep", "g", "", "grep word for InstanceName or InstanceID")
 
 	viper.BindPFlag("session-manager", rootCmd.Flags().Lookup("session-manager"))
 	viper.BindPFlag("ssh-user", rootCmd.Flags().Lookup("ssh-user"))
